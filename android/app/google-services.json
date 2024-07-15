@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "685145175490",
+    "project_id": "cetep-87b28",
+    "storage_bucket": "cetep-87b28.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:685145175490:android:b0e563acec3a0f2ef7125b",
+        "android_client_info": {
+          "package_name": "com.ggwp.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDbw-sR-XD7XlCeiIZkDJhMMRfqfepctE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
