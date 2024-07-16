@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/chat_provider.dart';
 import 'package:myapp/chat_screen.dart';
-//import 'package:myapp/login_screen.dart';
+import 'package:myapp/login_screen.dart';
 import 'package:provider/provider.dart';
 
 class SearchScreen extends StatefulWidget {

@@ -147,6 +147,7 @@ class MessagesStream extends StatelessWidget {
           final messageData = message.data() as Map<String, dynamic>;
           final messageText = messageData['messageBody'];
           final messageSender = messageData['senderId'];
+          final messageId = message.id;  // Get message ID
           final timestamp =
               messageData['timestamp'] ?? FieldValue.serverTimestamp();
           final currentUser = FirebaseAuth.instance.currentUser!.uid;
@@ -155,6 +156,7 @@ class MessagesStream extends StatelessWidget {
             text: messageText,
             isMe: currentUser == messageSender,
             timestamp: timestamp,
+            messageId: messageId,  // Pass message ID
           );
           messageWidgets.add(messageWidget);
         }
@@ -171,74 +173,112 @@ class MessageBubble extends StatelessWidget {
   final String sender;
   final String text;
   final bool isMe;
+  final String messageId;  // Add messageId to identify the message
   final dynamic timestamp;
 
-  const MessageBubble(
-      {super.key,
-      required this.sender,
-      required this.text,
-      required this.isMe,
-      this.timestamp});
+  const MessageBubble({
+    super.key,
+    required this.sender,
+    required this.text,
+    required this.isMe,
+    required this.messageId,  // Add this line
+    this.timestamp,
+  });
+
+  void _showDeleteOption(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.delete),
+                title: Text('Delete Message'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _deleteMessage(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _deleteMessage(BuildContext context) {
+    FirebaseFirestore.instance
+        .collection('chats')
+        .doc((context.findAncestorWidgetOfExactType<ChatScreen>() as ChatScreen).chatId)
+        .collection('messages')
+        .doc(messageId)
+        .delete();
+  }
 
   @override
   Widget build(BuildContext context) {
     final DateTime messageTime =
         (timestamp is Timestamp) ? timestamp.toDate() : DateTime.now();
-    return Padding(
-      padding: EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment:
-            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        children: [
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.75,
-            ),
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  spreadRadius: 2,
-                ),
-              ],
-              borderRadius: isMe
-                  ? BorderRadius.only(
-                      topLeft: Radius.circular(15),
-                      bottomLeft: Radius.circular(15),
-                      bottomRight: Radius.circular(15))
-                  : BorderRadius.only(
-                      topRight: Radius.circular(15),
-                      bottomLeft: Radius.circular(15),
-                      bottomRight: Radius.circular(15)),
-              color: isMe ? Color(0xFF3876FD) : Colors.white,
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    text,
-                    style: TextStyle(
-                      color: isMe ? Colors.white : Colors.black54,
-                      fontSize: 15,
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    '${messageTime.hour}:${messageTime.minute}',
-                    style: TextStyle(
-                      color: isMe ? Colors.white : Colors.black54,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
+    return GestureDetector(
+      onLongPress: () => _showDeleteOption(context),
+      child: Padding(
+        padding: EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment:
+              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Container(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.75,
+              ),
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    spreadRadius: 2,
                   ),
                 ],
+                borderRadius: isMe
+                    ? BorderRadius.only(
+                        topLeft: Radius.circular(15),
+                        bottomLeft: Radius.circular(15),
+                        bottomRight: Radius.circular(15))
+                    : BorderRadius.only(
+                        topRight: Radius.circular(15),
+                        bottomLeft: Radius.circular(15),
+                        bottomRight: Radius.circular(15)),
+                color: isMe ? Color(0xFF3876FD) : Colors.white,
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      text,
+                      style: TextStyle(
+                        color: isMe ? Colors.white : Colors.black54,
+                        fontSize: 15,
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      '${messageTime.hour}:${messageTime.minute}',
+                      style: TextStyle(
+                        color: isMe ? Colors.white : Colors.black54,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
